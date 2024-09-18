@@ -34,5 +34,5 @@ app.listen(8080, async () => {
     } catch (err) {
         console.error('Database connection failed', err);
     }
-    console.log('Server running on port 8080 VRUMmm');
+    console.log('Server rodando na porta 8080');
 });
