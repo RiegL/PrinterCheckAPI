@@ -12,6 +12,7 @@ router.get("/me", authMiddleware, async (req, res) => {
     res.status(200).json({data: req.user});
 })//valida o token
 
+
 router.get("/:id", async (req, res) => {
     const data = await getById(req.params.id);
     res.status(200).json({data});
