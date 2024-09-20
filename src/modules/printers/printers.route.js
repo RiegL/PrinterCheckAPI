@@ -1,9 +1,65 @@
 import { Router } from "express";
 import { getAll, getById, create, update, remove } from "./printers.model.js";
 import { authMiddleware } from "../../middleware/authMiddleware.js";
+import knex from "knex"; // Certifique-se de importar o knex se ainda não estiver
 
 const router = Router();
 
+// Rota para buscar impressora por serial_number
+router.get('/printers/:serial_number', async (req, res) => {
+  const { serial_number } = req.params;
+  try {
+    const printer = await knex('printers')
+      .where({ serial_number })
+      .first();
+      
+    if (printer) {
+      res.json(printer);
+    } else {
+      res.status(404).json({ message: 'Printer not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching printer', error });
+  }
+});
+
+// Rota para buscar impressora por serial_number e criar um reparo
+router.post('/repairs', async (req, res) => {
+  const { serial_number, description, codigo_identificador } = req.body;
+
+  try {
+      // Verifica se a impressora existe
+      const printer = await knex('printers')
+          .where({ serial_number })
+          .first();
+
+      if (!printer) {
+          return res.status(404).json({ message: 'Printer not found' });
+      }
+
+      // Cria o reparo
+      const repair = {
+          printer_id: printer.id,
+          description,
+          codigo_identificador,
+          status: 'Em reparo',
+          repair_date: new Date(),
+      };
+
+      const [repairId] = await createRepair(repair); // Cria o reparo
+
+      // Atualiza a impressora
+      await update(printer.id, { status: 'Em reparo' }); // Atualiza o status ou qualquer outro campo necessário
+
+      res.status(201).json({ message: 'Repair created successfully', repairId });
+  } catch (error) {
+      console.error('Erro ao registrar reparo:', error.message);
+      res.status(500).json({ message: 'Erro ao registrar reparo' });
+  }
+});
+
+
+// Rota para buscar todas as impressoras
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const data = await getAll();
@@ -14,6 +70,7 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 });
 
+// Rota para buscar impressora por ID
 router.get("/:id", authMiddleware, async (req, res) => {
   try {
     const data = await getById(req.params.id);
@@ -28,6 +85,7 @@ router.get("/:id", authMiddleware, async (req, res) => {
   }
 });
 
+// Rota para criar impressora
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const [id] = await create(req.body);
@@ -38,6 +96,7 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
+// Rota para atualizar impressora
 router.put("/:id", authMiddleware, async (req, res) => {
   try {
     const count = await update(req.params.id, req.body);
@@ -52,6 +111,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
   }
 });
 
+// Rota para deletar impressora
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const count = await remove(req.params.id);
@@ -65,5 +125,6 @@ router.delete("/:id", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Erro ao deletar impressora" });
   }
 });
+
 
 export default router;
