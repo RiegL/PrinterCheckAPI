@@ -7,7 +7,7 @@ const router = Router();
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const data = await getAll();
-    res.status(200).json({ data });
+    res.status(200).json(data);
   } catch (error) {
     console.error("Erro ao buscar impressoras:", error.message);
     res.status(500).json({ message: "Erro ao buscar impressoras" });
