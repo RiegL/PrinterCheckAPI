@@ -24,39 +24,39 @@ router.get('/printers/:serial_number', async (req, res) => {
 });
 
 // Rota para buscar impressora por serial_number e criar um reparo
+// Rota para criar um reparo e atualizar o status da impressora
 router.post('/repairs', async (req, res) => {
   const { serial_number, description, codigo_identificador } = req.body;
 
   try {
-      // Verifica se a impressora existe
-      const printer = await knex('printers')
-          .where({ serial_number })
-          .first();
+    // Verifica se a impressora existe
+    const printer = await knex('printers').where({ serial_number }).first();
 
-      if (!printer) {
-          return res.status(404).json({ message: 'Printer not found' });
-      }
+    if (!printer) {
+      return res.status(404).json({ message: 'Printer not found' });
+    }
 
-      // Cria o reparo
-      const repair = {
-          printer_id: printer.id,
-          description,
-          codigo_identificador,
-          status: 'Em reparo',
-          repair_date: new Date(),
-      };
+    // Cria o reparo
+    const repair = {
+      printer_id: printer.id,
+      description,
+      codigo_identificador,
+      status: 'Em reparo',
+      repair_date: new Date(),
+    };
 
-      const [repairId] = await createRepair(repair); // Cria o reparo
+    const [repairId] = await knex('repairs').insert(repair); // Cria o reparo
 
-      // Atualiza a impressora
-      await update(printer.id, { status: 'Em reparo' }); // Atualiza o status ou qualquer outro campo necessário
+    // Atualiza o status da impressora
+    await knex('printers').where({ id: printer.id }).update({ status: 'Em reparo' });
 
-      res.status(201).json({ message: 'Repair created successfully', repairId });
+    res.status(201).json({ message: 'Repair created successfully', repairId });
   } catch (error) {
-      console.error('Erro ao registrar reparo:', error.message);
-      res.status(500).json({ message: 'Erro ao registrar reparo' });
+    console.error('Erro ao registrar reparo:', error.message);
+    res.status(500).json({ message: 'Erro ao registrar reparo' });
   }
 });
+
 
 
 // Rota para buscar todas as impressoras
