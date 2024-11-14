@@ -3,7 +3,7 @@ import { getById } from '../modules/user/index.js';
 
 export const authMiddleware = async (req, res, next) => {
   try {
-    const isValid = jwt.verify(req.token, process.env.JWT_SECRET); //cria o token
+    const isValid = jwt.verify(req.token, process.env.JWT_SECRET); //verifica o token
     const user = await getById(isValid.id);
     req.user = user;
     next();

@@ -7,14 +7,15 @@ export const getAll = async () => {
     "name",
     "email",
     "created_at",
-    "updated_at"
+    "updated_at",
+    "password"
   );
 }; // lista todos os usuarios
 
 export const getById = async (id) => {
   return knex("users")
     .where({ id })
-    .select("id", "name", "email", "created_at", "updated_at")
+    .select("id", "name","password", "email", "created_at", "updated_at")
     .first();
 };// busca um usuario pelo id
 
